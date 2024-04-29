@@ -12,3 +12,10 @@ Contenu :
 
 - Rapport au format PDF
 - Code des différents modèles implémentés
+
+# Lancer SemiGNN
+
+
+# Lancer Player2Vec 
+
+    python DGFraud/main.py --model Player2Vec --dataset_str dblp 
