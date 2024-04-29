@@ -12,6 +12,7 @@ from algorithms.SemiGNN.SemiGNN import SemiGNN
 import time
 from utils.data_loader import *
 from utils.utils import *
+from gnn import process_data
 
 
 # os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
@@ -57,7 +58,7 @@ def get_data(ix, int_batch, train_size):
 
 def load_data(args):
     if args.dataset_str == 'example':
-        adj_list, features, train_data, train_label, test_data, test_label = load_example_semi()
+        adj_list, features, train_data, train_label, test_data, test_label = process_data()
         node_size = features.shape[0]
         node_embedding = features.shape[1]
         class_size = train_label.shape[1]
