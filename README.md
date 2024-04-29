@@ -15,7 +15,8 @@ Contenu :
 
 # Lancer SemiGNN
 
-    python GFraud/algorithms/SemiGNN/SemiGNN_main.py
+    cd DGFraud/algorithms/SemiGNN
+    python SemiGNN_main.py
 
 # Lancer Player2Vec 
 

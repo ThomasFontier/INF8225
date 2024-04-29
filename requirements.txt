@@ -6,5 +6,5 @@ scipy
 torch
 pyyaml
 torch_geometric
-imblearn==0.7.0
+imbalanced_learn==0.7.0
 tensorflow>=1.14.0,<2.0

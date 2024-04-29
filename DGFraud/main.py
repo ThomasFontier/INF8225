@@ -103,8 +103,6 @@ def load_data(args):
         class_size = train_label.shape[1]
         train_size = len(train_data)
         paras = [node_size, node_embedding, class_size, train_size]
-        print(paras)
-        return
     if args.dataset_str == 'example' and args.model == 'GAS':
         adj_list, features, train_data, train_label, test_data, test_label = load_data_gas()
         node_embedding_r = features[0].shape[1]
@@ -129,10 +127,6 @@ def train(args, adj_list, features, train_data, train_label, test_data, test_lab
     with tf.Session() as sess:
         if args.model == 'Player2Vec':
             adj_data = [normalize_adj(adj) for adj in adj_list]
-            print(adj_data)
-            print(paras)
-            print(args)
-            return
             meta_size = len(adj_list)
             net = Player2Vec(session=sess, class_size=paras[2], gcn_output1=args.hidden1,
                              meta=meta_size, nodes=paras[0], embedding=paras[1], encoding=args.gcn_output)
@@ -201,8 +195,6 @@ def train(args, adj_list, features, train_data, train_label, test_data, test_lab
                     loss, acc, pred, prob = net.train(features, adj_data, batch_label,
                                                       batch_data, args.learning_rate,
                                                       args.momentum)
-                batch_losses.append(loss)
-                batch_accs.append(acc)
                 print("batch loss: {:.4f}, batch acc: {:.4f}".format(loss, acc))
                 # print(prob, pred)
 
@@ -211,9 +203,6 @@ def train(args, adj_list, features, train_data, train_label, test_data, test_lab
                 count += 1
             train_loss = train_loss / count
             train_acc = train_acc / count
-            epochs.append(epoch)
-            train_losses.append(train_loss)
-            train_accs.append(train_acc)
             print("epoch{:d} : train_loss: {:.4f}, train_acc: {:.4f}".format(epoch, train_loss, train_acc))
             # net.save(sess)
         t_end = time.clock()
@@ -232,9 +221,6 @@ def train(args, adj_list, features, train_data, train_label, test_data, test_lab
                                                                           test_data)
 
     print("test acc:", test_acc)
-    with open(r"accuracies.txt", "a") as f:
-        f.write(str(test_acc) + "\n")
-
 
 if __name__ == "__main__":
     args = arg_parser()

@@ -7,13 +7,55 @@ import tensorflow as tf
 import argparse
 import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), '../..')))
-from algorithms.SemiGNN.SemiGNN import SemiGNN
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), '../../..')))
+from DGFraud.algorithms.SemiGNN.SemiGNN import SemiGNN
 import time
 from utils.data_loader import *
 from utils.utils import *
-from gnn import process_data
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from imblearn.over_sampling import RandomOverSampler
+from imblearn.under_sampling import RandomUnderSampler
+from imblearn.pipeline import Pipeline
 
+def process_data():
+    data = pd.read_csv(r'../../../S-FFSD.csv')
+    data = data[data['Labels'] != 2]
+    print(data.head())
+
+    X = data.drop(['Labels'], axis=1)
+    y = data['Labels']
+
+    # on a décidé de faire de l'oversampling sur les fraudes suivi d'un undersampling sur les non-fraudes
+    # l'idée est d'équilibrer les deux classdes sans pour autant avoir à créer trop de données de fraudes
+    over = RandomOverSampler(sampling_strategy=0.5)
+    under = RandomUnderSampler(sampling_strategy=1.0)
+    steps = [('o', over), ('u', under)]
+    pipeline = Pipeline(steps=steps)
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+    encoder = LabelEncoder()
+    combined_nodes = pd.concat([X_resampled['Source'], X_resampled['Target']])
+    encoder.fit(combined_nodes)
+
+    X_resampled['Source'] = encoder.transform(X_resampled['Source'])
+    X_resampled['Target'] = encoder.transform(X_resampled['Target'])
+
+    features = pd.get_dummies(X_resampled[['Source', 'Target', 'Location', 'Type']])
+    
+    N = encoder.classes_.size 
+    adjacency_matrix = np.zeros((N, N))
+    weighted_adjacency_matrix = np.zeros((N, N))
+
+    for _, row in X_resampled.iterrows():
+        adjacency_matrix[row['Source'], row['Target']] = 1
+        weighted_adjacency_matrix[row['Source'], row['Target']] += row['Amount']
+
+    X_train, X_test, y_train, y_test = train_test_split(range(len(y_resampled)), np.eye(2)[y_resampled], test_size=0.2, random_state=48, stratify=y_resampled)
+    
+    return [adjacency_matrix, weighted_adjacency_matrix], features, X_train, y_train, X_test, y_test
 
 # os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 
@@ -125,7 +167,6 @@ def train(args, adj_list, features, train_data, train_label, test_data, test_lab
                                                                       args.momentum)
 
     print("test acc:", test_acc)
-
 
 if __name__ == "__main__":
     args = arg_parser()
